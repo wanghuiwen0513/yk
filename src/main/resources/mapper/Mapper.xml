@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanghuiwen.mapper.MeetingMapper">
+	<select id="queryMeeting" resultType="com.wanghuiwen.bean.Meeting" parameterType="map">
+		SELECT m.*,t.tname,GROUP_CONCAT(s.sname) sname FROM meeting m LEFT JOIN type t on m.tid = t.tid 
+		LEFT JOIN meetingserver ms on  ms.mid = m.mid
+		LEFT JOIN `server` s on s.sid = ms.sid 
+		<where>
+			<if test="mname!=null">
+				and m.mname like '%${mname}%'
+			</if>
+				<if test="create_time!=null and create_time!=''">
+					and m.create_time >=#{starttime}
+				</if>
+				<if test="create_time!=null and create_time!=''">
+					and m.create_time &lt;#{starttime}
+				</if>
+		</where>
+		GROUP BY m.mid
+	</select>
+	<select id="queryType" resultType="com.wanghuiwen.bean.Type">
+		select * from type
+	</select>
+	<select id="queryServer" resultType="com.wanghuiwen.bean.Server">
+		select * from server
+	</select>
+	<insert id="addMeeting" parameterType="com.wanghuiwen.bean.Meeting" useGeneratedKeys="true" keyProperty="mid">
+		insert INTO meeting(code,tid,mname,start_time,end_time,create_time) VALUES(#{code},#{tid},#{mname},#{start_time},#{end_time},now())
+	</insert>
+	<insert id="addMS" parameterType="com.wanghuiwen.bean.Meeting">
+		insert into meetingserver(mid,sid) values(#{mid},#{sid})
+	</insert>
+	
+	<delete id="delMs" parameterType="com.wanghuiwen.bean.MeetingServer">
+		delete from meetingserver where mid=#{mid}
+	</delete>
+	<delete id="delMeeting" parameterType="com.wanghuiwen.bean.Meeting">
+		delete from meeting where mid=#{mid}
+	</delete>
+	<select id="queryMeetingById" resultType="com.wanghuiwen.bean.Meeting" parameterType="int">
+		select * from meeting where mid=#{mid}
+	</select>
+	<select id="queryServerByMid" resultType="com.wanghuiwen.bean.Server" parameterType="int">
+		select * from meetingserver ms,`server` s where ms.sid=s.sid and ms.mid=#{mid}
+	</select>
+	<update id="updateMeeting" parameterType="com.wanghuiwen.bean.Meeting">
+		update meeting set(code=#{code},tid=#{tid},mname=#{mname},start_time=#{start_time},end_time=#{end_time},now()) where mid=#{mid}
+	</update>
+</mapper>
